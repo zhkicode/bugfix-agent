@@ -1,0 +1,16 @@
+.git
+.idea
+.venv
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+
+data/
+workspace/
+frontend/node_modules/
+frontend/dist/
+backend/tests/
+bin/
+.env
+*.tar
+*.tar.gz

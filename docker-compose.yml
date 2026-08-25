@@ -1,0 +1,19 @@
+services:
+  bugfixagent:
+    image: bugfixagent:latest     # 由本地构建的 tar 包 docker load 导入，无需 build
+    container_name: bugfixagent
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      TZ: Asia/Shanghai
+      # multica API Token（https://multica.ai/settings?tab=tokens），填入 .env 后 restart 生效
+      MULTICA_TOKEN: ${MULTICA_TOKEN:-}
+    volumes:
+      - bugfix_data:/app/data          # SQLite + 加密密钥（含面板配置的 claude 认证）
+      - bugfix_workspace:/app/workspace  # 修复用临时克隆
+      - agent_home:/home/agent         # claude / multica 运行状态与凭据
+volumes:
+  bugfix_data:
+  bugfix_workspace:
+  agent_home:
