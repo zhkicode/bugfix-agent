@@ -8,7 +8,7 @@ DEFAULT_SETTINGS = {
     "poll.initial_lookback_sec": ("300", "int"),
     "dedup.cooldown_hours": ("72", "int"),
     "notify.enabled": ("true", "bool"),
-    "notify.recipients": ("zkcode@126.com", "str"),
+    "notify.recipients": ("", "str"),
     "smtp.host": ("smtp.126.com", "str"),
     "smtp.port": ("465", "int"),
     "smtp.user": ("", "str"),

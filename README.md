@@ -51,7 +51,7 @@ npm run dev          # http://localhost:5173（/api 已代理到 8787）
 
 设置页填：`smtp.host=smtp.126.com`、`smtp.port=465`、`smtp.secure=ssl`、
 `smtp.user=你的邮箱`、`smtp.pass=SMTP 授权码`（非登录密码，需在邮箱后台开启 SMTP 并生成）、
-`notify.recipients=zkcode@126.com`。`notify.enabled` 控制是否通知，可点"发送测试邮件"验证。
+`notify.recipients=你的邮箱`。`notify.enabled` 控制是否通知，可点"发送测试邮件"验证。
 
 ## 工作流程
 
