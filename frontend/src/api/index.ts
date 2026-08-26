@@ -38,8 +38,6 @@ export default {
     http.post<{ ok: boolean; message: string }>('/settings/test-smtp', { recipient }).then(r => r.data),
   testClaude: () =>
     http.post<{ ok: boolean; message: string }>('/settings/test-claude').then(r => r.data),
-  testMultica: () =>
-    http.post<{ ok: boolean; message: string }>('/settings/test-multica').then(r => r.data),
 
   // dashboard
   stats: () => http.get<DashboardStats>('/dashboard/stats').then(r => r.data),

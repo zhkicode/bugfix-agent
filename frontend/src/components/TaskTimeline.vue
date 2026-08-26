@@ -10,7 +10,6 @@ interface Stage {
 
 const stages: Stage[] = [
   { key: 'ts_detected', label: '识别到错误' },
-  { key: 'ts_multica', label: '创建 multica 任务' },
   { key: 'ts_cloned', label: '克隆仓库' },
   { key: 'ts_fixed', label: 'AI 修复' },
   { key: 'ts_pushed', label: '推送分支' },

@@ -43,7 +43,6 @@ async def main() -> None:
     async with SessionLocal() as session:
         t = await session.get(Task, task_id)
         print(f"status={t.status}")
-        print(f"multica_task_id={t.multica_task_id!r}")
         print(f"error_detail={t.error_detail[:200]}")
         logs = (
             await session.execute(select(FixLog).where(FixLog.task_id == task_id))
@@ -51,7 +50,6 @@ async def main() -> None:
         for l in logs:
             print(f"  [{l.stage}/{l.level}] {l.message[:100]}")
         assert t.status == "failed", "无效仓库应导致任务 failed"
-        assert t.multica_task_id, "multica(echo 模拟) 应已创建并提取 ID"
         assert any("失败" in (l.message or "") for l in logs), "应有失败日志"
 
         # failed 任务可重试；重试后状态归位并异步重跑

@@ -66,7 +66,6 @@ async def notify_task_result(task, container_name: str) -> None:
         f"错误类型: {task.error_type}\n"
         f"错误信息: {task.message}\n\n"
         f"堆栈摘要:\n{task.stack_summary}\n\n"
-        f"multica 任务: {task.multica_task_id or '无'}\n"
         f"修复分支: {task.branch_name or '无'}\n"
         f"MR/PR 链接: {task.mr_url or '无'}\n"
         f"任务状态: {task.status}\n"

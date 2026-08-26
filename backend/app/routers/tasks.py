@@ -15,7 +15,7 @@ def _brief(t: Task, container_name: str) -> TaskBrief:
     return TaskBrief(
         id=t.id, container_id=t.container_id, container_name=container_name,
         error_type=t.error_type, message=t.message, status=t.status,
-        multica_task_id=t.multica_task_id, branch_name=t.branch_name,
+        branch_name=t.branch_name,
         mr_url=t.mr_url, retry_count=t.retry_count, fingerprint=t.fingerprint,
         created_at=t.created_at, updated_at=t.updated_at,
     )
@@ -85,7 +85,7 @@ async def get_task(task_id: int):
         log_excerpt=task.log_excerpt,
         error_detail=task.error_detail,
         claude_output=task.claude_output,
-        ts_detected=task.ts_detected, ts_multica=task.ts_multica,
+        ts_detected=task.ts_detected,
         ts_cloned=task.ts_cloned, ts_fixed=task.ts_fixed,
         ts_pushed=task.ts_pushed, ts_mr=task.ts_mr, ts_notified=task.ts_notified,
         logs=[FixLogOut(**{k: getattr(l, k) for k in

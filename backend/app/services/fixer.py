@@ -1,4 +1,4 @@
-"""修复编排状态机：multica → clone → claude 修复 → push → MR/PR → 邮件。"""
+"""修复编排状态机：clone → claude 修复 → push → MR/PR → 邮件。"""
 import asyncio
 import json
 import shutil
@@ -9,7 +9,7 @@ from sqlalchemy import select
 from app.config import WORKSPACE_DIR
 from app.database import SessionLocal
 from app.models import Container, FixLog, Task, utcnow
-from app.services import claude_cli, forge, gitops, multica, notifier
+from app.services import claude_cli, forge, gitops, notifier
 from app.utils.crypto import decrypt
 
 FIX_PROMPT = """本仓库对应的线上服务出现了以下错误（来自容器 {container} 的运行日志），请定位并修复：
@@ -85,28 +85,7 @@ async def run_pipeline(task_id: int) -> None:
     task, container = loaded
 
     try:
-        # 1. multica 创建任务（已有 ID 则跳过，避免重复创建）
-        if not task.multica_task_id:
-            await _save(task_id, status="multica_created")
-            title = f"[auto] {task.error_type}: {task.message[:80]}"
-            desc = (
-                f"容器 {container.name} 检测到错误\n\n"
-                f"错误信息: {task.message}\n\n堆栈摘要:\n{task.stack_summary}\n\n"
-                f"由 BugfixAgent 自动创建，修复分支将由 AI 生成。"
-            )
-            task_id_out, output = await multica.create_task(title, desc)
-            if task_id_out:
-                await _save(task_id, multica_task_id=task_id_out, ts_multica=utcnow())
-                await _log(task_id, "multica", "info", f"multica 任务已创建: {task_id_out}")
-            else:
-                await _log(
-                    task_id, "multica", "warn",
-                    f"multica 任务创建失败或未解析到 ID，继续修复流程。输出: {output[:500]}",
-                )
-        else:
-            await _save(task_id, status="multica_created")
-
-        # 2. 克隆仓库并建分支
+        # 1. 克隆仓库并建分支
         await _save(task_id, status="cloning")
         token = decrypt(container.repo_token_enc)
         authed_url = gitops.authed_repo_url(
@@ -116,12 +95,15 @@ async def run_pipeline(task_id: int) -> None:
         await _reset_workspace(ws)
         target_branch = container.repo_default_branch or "main"
         await gitops.clone(authed_url, str(ws), target_branch)
-        branch = f"bugfix/agent-{task_id}"
+        # 重试时换分支名，避免与远端已存在的同名分支产生 non-fast-forward 冲突
+        branch = f"bugfix/agent-{task_id}" + (
+            f"-r{task.retry_count}" if task.retry_count else ""
+        )
         await gitops.create_branch(str(ws), branch)
         await _save(task_id, branch_name=branch, ts_cloned=utcnow())
         await _log(task_id, "cloning", "info", f"已克隆仓库并创建分支 {branch}")
 
-        # 3. claude 修复
+        # 2. claude 修复
         await _save(task_id, status="fixing")
         prompt = FIX_PROMPT.format(
             container=container.name,
@@ -141,7 +123,7 @@ async def run_pipeline(task_id: int) -> None:
         if not await gitops.has_changes(str(ws)):
             raise RuntimeError("claude 未产生任何代码修改（无 diff），视为修复失败")
 
-        # 4. commit + push
+        # 3. commit + push
         await _save(task_id, status="pushing")
         commit_msg = (
             f"fix: {task.error_type}: {task.message[:100]}\n\n"
@@ -153,7 +135,7 @@ async def run_pipeline(task_id: int) -> None:
         await _save(task_id, ts_pushed=utcnow())
         await _log(task_id, "pushing", "info", f"已提交并推送分支 {branch}")
 
-        # 5. 创建 MR / PR
+        # 4. 创建 MR / PR
         if not task.mr_url:
             mr_url = await forge.create_mr_or_pr(
                 container.repo_provider,
@@ -167,7 +149,7 @@ async def run_pipeline(task_id: int) -> None:
                     f"**容器**: {container.name}\n\n"
                     f"**错误**: {task.error_type}: {task.message}\n\n"
                     f"**堆栈**:\n```\n{task.stack_summary[:1500]}\n```\n\n"
-                    f"**multica 任务**: {task.multica_task_id or '无'}\n\n"
+
                     f"**AI 修复说明**:\n{output[:2000]}\n\n"
                     f"---\n由 BugfixAgent 自动生成，请人工审核后合并。"
                 ),
@@ -177,7 +159,7 @@ async def run_pipeline(task_id: int) -> None:
         else:
             await _save(task_id, status="mr_created")
 
-        # 6. 邮件通知（notify.enabled=false 时静默跳过）
+        # 5. 邮件通知（notify.enabled=false 时静默跳过）
         await _save(task_id, status="notified")
         try:
             await notifier.notify_task_result(task, container.name)
@@ -204,7 +186,7 @@ async def run_pipeline(task_id: int) -> None:
 
 
 async def retry_task(task_id: int) -> bool:
-    """重试 failed 任务：保留 multica ID 与 MR 链接，从克隆阶段重跑。"""
+    """重试 failed 任务：保留 MR 链接，从克隆阶段重跑。"""
     async with SessionLocal() as session:
         task = await session.get(Task, task_id)
         if task is None or task.status != "failed":

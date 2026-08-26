@@ -58,15 +58,7 @@ const groups: Group[] = [
     ],
     hint: '留空则使用容器内已有环境认证。配置后点上方「测试 Claude」验证。',
   },
-  {
-    title: 'multica CLI',
-    fields: [
-      { key: 'multica.create_cmd', label: '创建任务命令', type: 'str' },
-      { key: 'multica.id_regex', label: '任务 ID 提取正则', type: 'str' },
-      { key: 'multica.status_cmd', label: '查询状态命令', type: 'str' },
-    ],
-    hint: '占位符：{title} {desc} {task_id}。认证：服务器 .env 中配置 MULTICA_TOKEN 后重启容器。',
-  },
+
   {
     title: 'Claude CLI',
     fields: [
@@ -109,11 +101,11 @@ async function testSmtp() {
   }
 }
 
-async function testTool(key: 'claude' | 'multica') {
+async function testClaude() {
   testing.value = true
   try {
     await save()
-    const r = key === 'claude' ? await api.testClaude() : await api.testMultica()
+    const r = await api.testClaude()
     r.ok ? ElMessage.success(r.message) : ElMessage.error(r.message)
   } catch (e: any) {
     ElMessage.error(e.response?.data?.detail || '测试失败')
@@ -131,8 +123,7 @@ onMounted(load)
       <h2 class="title">系统设置</h2>
       <div>
         <el-button :loading="testing" @click="testSmtp">测试邮件</el-button>
-        <el-button :loading="testing" @click="testTool('claude')">测试 Claude</el-button>
-        <el-button :loading="testing" @click="testTool('multica')">测试 multica</el-button>
+        <el-button :loading="testing" @click="testClaude()">测试 Claude</el-button>
         <el-button type="primary" :loading="saving" @click="save">保存全部</el-button>
       </div>
     </div>

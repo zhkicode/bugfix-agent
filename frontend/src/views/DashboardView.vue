@@ -114,9 +114,6 @@ onUnmounted(() => window.clearInterval(timer))
             <StatusTag :status="row.status" />
           </template>
         </el-table-column>
-        <el-table-column prop="multica_task_id" label="multica" width="110" show-overflow-tooltip>
-          <template #default="{ row }">{{ row.multica_task_id || '-' }}</template>
-        </el-table-column>
         <el-table-column label="MR/PR" width="100">
           <template #default="{ row }">
             <el-link v-if="row.mr_url" :href="row.mr_url" target="_blank" type="primary" @click.stop>
@@ -154,7 +151,6 @@ onUnmounted(() => window.clearInterval(timer))
           <el-descriptions-item label="状态"><StatusTag :status="detail.status" /></el-descriptions-item>
           <el-descriptions-item label="错误类型" :span="2">{{ detail.error_type }}</el-descriptions-item>
           <el-descriptions-item label="错误信息" :span="2">{{ detail.message }}</el-descriptions-item>
-          <el-descriptions-item label="multica 任务">{{ detail.multica_task_id || '无' }}</el-descriptions-item>
           <el-descriptions-item label="重试次数">{{ detail.retry_count }}</el-descriptions-item>
           <el-descriptions-item label="修复分支" :span="2">
             <code v-if="detail.branch_name">{{ detail.branch_name }}</code>

@@ -28,22 +28,6 @@ RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && npm install -g @anthropic-ai/claude-code \
     && npm cache clean --force
 
-# multica CLI（Go 二进制，GitHub Releases 分发）
-ARG MULTICA_VERSION=
-ARG TARGETARCH
-RUN set -eux; \
-    arch="${TARGETARCH:-amd64}"; \
-    if [ -n "$MULTICA_VERSION" ]; then tag="$MULTICA_VERSION"; else \
-      url=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/multica-ai/multica/releases/latest); \
-      tag="${url##*/}"; \
-    fi; \
-    ver="${tag#v}"; \
-    curl -fsSL --retry 3 "https://github.com/multica-ai/multica/releases/download/${tag}/multica-cli-${ver}-linux-${arch}.tar.gz" -o /tmp/multica.tar.gz; \
-    tar -xzf /tmp/multica.tar.gz -C /tmp multica; \
-    install -m 0755 /tmp/multica /usr/local/bin/multica; \
-    rm -f /tmp/multica.tar.gz; \
-    multica --version
-
 # 非 root 运行（claude CLI 拒绝以 root 常规运行）
 RUN useradd -m -u 1000 agent
 

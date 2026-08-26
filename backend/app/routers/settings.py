@@ -50,22 +50,3 @@ async def test_claude():
         return {"ok": True, "message": f"claude 可用，回复: {result[:100]}"}
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "message": str(e)}
-
-
-@router.post("/test-multica")
-async def test_multica():
-    """验证 multica CLI 已安装且已登录（能列出 issue 即认证有效）。"""
-    proc = await asyncio.create_subprocess_shell(
-        "multica issue list --limit 1",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT,
-    )
-    try:
-        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=60)
-    except asyncio.TimeoutError:
-        proc.kill()
-        return {"ok": False, "message": "multica 命令超时"}
-    output = stdout.decode(errors="replace").strip()
-    if proc.returncode != 0:
-        return {"ok": False, "message": output[:300] or f"exit={proc.returncode}"}
-    return {"ok": True, "message": f"multica 认证有效:\n{output[:300]}"}

@@ -45,7 +45,6 @@ class Container(Base):
 # 任务状态机
 TASK_STATUSES = [
     "detected",        # 已识别到错误
-    "multica_created", # 已创建 multica 任务
     "cloning",         # 克隆仓库中
     "fixing",          # claude 修复中
     "pushing",         # 推送分支中
@@ -69,7 +68,6 @@ class Task(Base):
     suspect_files: Mapped[str] = mapped_column(Text, default="")  # JSON array
     log_excerpt: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(30), default="detected")
-    multica_task_id: Mapped[str] = mapped_column(String(100), default="")
     branch_name: Mapped[str] = mapped_column(String(200), default="")
     mr_url: Mapped[str] = mapped_column(Text, default="")
     retry_count: Mapped[int] = mapped_column(Integer, default=0)
@@ -77,7 +75,6 @@ class Task(Base):
     claude_output: Mapped[str] = mapped_column(Text, default="")
     # 各阶段时间戳
     ts_detected: Mapped[dt.datetime] = mapped_column(default=utcnow)
-    ts_multica: Mapped[dt.datetime | None] = mapped_column(nullable=True)
     ts_cloned: Mapped[dt.datetime | None] = mapped_column(nullable=True)
     ts_fixed: Mapped[dt.datetime | None] = mapped_column(nullable=True)
     ts_pushed: Mapped[dt.datetime | None] = mapped_column(nullable=True)

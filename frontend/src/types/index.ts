@@ -45,7 +45,6 @@ export interface Task {
   error_type: string
   message: string
   status: string
-  multica_task_id: string
   branch_name: string
   mr_url: string
   retry_count: number
@@ -59,7 +58,6 @@ export interface Task {
   error_detail?: string
   claude_output?: string
   ts_detected?: string
-  ts_multica?: string | null
   ts_cloned?: string | null
   ts_fixed?: string | null
   ts_pushed?: string | null
@@ -85,7 +83,6 @@ export interface DashboardStats {
 
 export const STATUS_TEXT: Record<string, string> = {
   detected: '已识别',
-  multica_created: 'multica 已建',
   cloning: '克隆仓库',
   fixing: 'AI 修复中',
   pushing: '推送分支',
@@ -97,7 +94,6 @@ export const STATUS_TEXT: Record<string, string> = {
 
 export const STATUS_TAG: Record<string, string> = {
   detected: 'info',
-  multica_created: 'info',
   cloning: 'primary',
   fixing: 'warning',
   pushing: 'primary',

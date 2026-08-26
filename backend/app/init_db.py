@@ -20,15 +20,6 @@ DEFAULT_SETTINGS = {
     "claude.auth_token": ("", "str"),
     "claude.base_url": ("", "str"),
     "claude.model": ("", "str"),
-    "multica.create_cmd": (
-        'multica issue create --title {title} --description {desc}',
-        "str",
-    ),
-    "multica.id_regex": (
-        r'([A-Z]{2,6}-\d+)',
-        "str",
-    ),
-    "multica.status_cmd": ("multica issue get {task_id}", "str"),
 }
 
 

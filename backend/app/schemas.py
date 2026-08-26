@@ -79,7 +79,6 @@ class TaskBrief(BaseModel):
     error_type: str
     message: str
     status: str
-    multica_task_id: str
     branch_name: str
     mr_url: str
     retry_count: int
@@ -103,7 +102,6 @@ class TaskDetail(TaskBrief):
     error_detail: str
     claude_output: str
     ts_detected: dt.datetime | None
-    ts_multica: dt.datetime | None
     ts_cloned: dt.datetime | None
     ts_fixed: dt.datetime | None
     ts_pushed: dt.datetime | None
