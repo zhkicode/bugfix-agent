@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import api from '../api'
 import type { DashboardStats, Task } from '../types'
 import StatusTag from '../components/StatusTag.vue'
 import TaskTimeline from '../components/TaskTimeline.vue'
+
+const route = useRoute()
 
 const stats = ref<DashboardStats | null>(null)
 const tasks = ref<Task[]>([])
@@ -74,6 +77,9 @@ const statusOptions = computed(() => [
 
 onMounted(() => {
   load()
+  // 深链接：/?task=N 直接打开任务详情抽屉
+  const taskParam = Number(route.query.task)
+  if (taskParam > 0) openDetail(taskParam)
   timer = window.setInterval(refresh, 5000)
 })
 onUnmounted(() => window.clearInterval(timer))

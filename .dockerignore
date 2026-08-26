@@ -11,6 +11,7 @@ frontend/node_modules/
 frontend/dist/
 backend/tests/
 bin/
+docs/
 .env
 *.tar
 *.tar.gz

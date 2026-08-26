@@ -11,6 +11,16 @@
 - 📧 **邮件通知**：修复结果（含 MR 链接）自动推送邮箱，开关与收件人可配置
 - 🐳 **一键部署**：所有依赖（Python/Node/git/Claude CLI）打包进单个 Docker 镜像，SQLite 零外部依赖，本地构建 tar 传输即可上线
 
+## 界面预览
+
+| 任务面板 | 任务详情（时间线 / AI 修复说明） |
+|:---:|:---:|
+| ![任务面板](docs/screenshots/dashboard.png) | ![任务详情](docs/screenshots/task-detail.png) |
+
+| 容器监控 | 系统设置 |
+|:---:|:---:|
+| ![容器监控](docs/screenshots/containers.png) | ![系统设置](docs/screenshots/settings.png) |
+
 ## 技术栈
 
 Python (FastAPI + SQLAlchemy + SQLite + paramiko) · Vue 3 (Vite + TypeScript + Element Plus) · Claude CLI
