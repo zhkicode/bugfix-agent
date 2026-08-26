@@ -1,6 +1,7 @@
 services:
   bugfixagent:
-    image: bugfixagent:latest     # 由本地构建的 tar 包 docker load 导入，无需 build
+    # CI 推送到 GHCR 的镜像；本地手动部署时可 IMAGE=bugfixagent:latest docker compose up -d
+    image: ${IMAGE:-ghcr.io/zhkicode/bugfix-agent:latest}
     container_name: bugfixagent
     restart: unless-stopped
     ports:

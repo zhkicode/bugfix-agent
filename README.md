@@ -106,27 +106,36 @@ python tests/integration_check.py          # 真实调用 claude CLI 的分析�
 python tests/fixer_pipeline_check.py       # 修复管线失败/重试路径测试
 ```
 
-## Docker 部署（本地构建 → tar 传输 → 服务器运行）
+## Docker 部署
 
-镜像内置全部依赖：Python 后端、Vue 前端、git、Node、Claude CLI。
-所有资源都在容器内，服务器只需 Docker。
+### CI 自动部署（推荐）
 
-### 1. 本地构建镜像并导出 tar（Mac 为 ARM 时用 buildx 交叉构建 amd64）
+推送到 `main` 分支即自动完成：**GitHub Actions 构建镜像 → 推送 GHCR
+（ghcr.io/zhkicode/bugfix-agent）→ SSH 到服务器拉取新镜像 → `docker compose up -d` → 健康检查**。
+
+需要一次性配置 3 个仓库 Secrets（Settings → Secrets and variables → Actions）：
+
+| Secret | 说明 |
+|---|---|
+| `ECS_HOST` | 服务器 IP |
+| `ECS_USER` | SSH 用户名 |
+| `ECS_SSH_KEY` | 部署专用私钥（公钥加入服务器 authorized_keys） |
+
+也可在 Actions 页面手动触发（workflow_dispatch）。数据在 named volumes 中，
+反复部署不丢失；面板配置（claude 认证等）存数据库，无需重复填写。
+
+### 本地手动部署（备用）
 
 ```bash
 cd BugfixAgent
 docker buildx build --platform linux/amd64 -t bugfixagent:latest --load .
-docker save bugfixagent:latest | gzip > ~/Desktop/bugfixagent-image.tar.gz
+docker save bugfixagent:latest | gzip > ~/bugfixagent-image.tar.gz
+rsync -azP ~/bugfixagent-image.tar.gz docker-compose.yml <server>:~/BugfixAgent/
+ssh <server> 'cd ~/BugfixAgent && docker load < bugfixagent-image.tar.gz && \
+  IMAGE=bugfixagent:latest docker compose up -d'
 ```
 
-### 2. 传输到服务器并启动
-
-```bash
-rsync -azP ~/Desktop/bugfixagent-image.tar.gz docker-compose.yml ecs:~/BugfixAgent/
-ssh ecs 'cd ~/BugfixAgent && docker load < bugfixagent-image.tar.gz && docker compose up -d'
-```
-
-### 3. 配置认证（部署后一次性）
+### 部署后配置（一次性）
 
 - **Claude CLI**：打开 `http://<服务器IP>:8787` → 系统设置 → 「Claude CLI 认证」，
   填入 `ANTHROPIC_AUTH_TOKEN` / `ANTHROPIC_BASE_URL` / 模型名，保存后点「测试 Claude」验证。
@@ -136,8 +145,6 @@ ssh ecs 'cd ~/BugfixAgent && docker load < bugfixagent-image.tar.gz && docker co
 ### 说明
 
 - 访问 `http://<服务器IP>:8787`（安全组需放行 8787；面板暂无鉴权，也可用
-  `ssh -L 8787:localhost:8787 ecs` 隧道访问，不对外暴露端口）
+  `ssh -L 8787:localhost:8787 <server>` 隧道访问，不对外暴露端口）
 - 数据持久化：named volumes —— `bugfix_data`（数据库+密钥+面板配置）、
   `bugfix_workspace`（修复克隆副本）、`agent_home`（claude 运行状态）
-- 更新版本：本地重新构建导出 tar → 传输 → `docker load` → `docker compose up -d`
-  （同名镜像替换，卷数据保留）
